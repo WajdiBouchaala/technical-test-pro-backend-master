@@ -7,6 +7,7 @@ import com.maiia.pro.repository.AppointmentRepository;
 import com.maiia.pro.repository.AvailabilityRepository;
 import com.maiia.pro.repository.PractitionerRepository;
 import com.maiia.pro.repository.TimeSlotRepository;
+import com.maiia.pro.service.impl.ProAvailabilityServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,7 +26,7 @@ class ProAvailabilityServiceTest {
     private final  EntityFactory entityFactory = new EntityFactory();
     private  final static Integer patient_id=657679;
     @Autowired
-    private ProAvailabilityService proAvailabilityService;
+    private ProAvailabilityServiceImpl proAvailabilityService;
 
     @Autowired
     private AppointmentRepository appointmentRepository;
@@ -196,4 +197,50 @@ class ProAvailabilityServiceTest {
         expectedStartDate.add(startDate.plusMinutes(50));
         assertTrue(availabilitiesStartDate.containsAll(expectedStartDate));
     }
+
+    @Test
+    void generateOptimalAvailabilitiesWithAppointmentOnTwoAvailabilities_version2() {
+        Practitioner practitioner = practitionerRepository.save(entityFactory.createPractitioner());
+        LocalDateTime startDate = LocalDateTime.of(2020, Month.FEBRUARY, 5, 11, 0, 0);
+        timeSlotRepository.save(entityFactory.createTimeSlot(practitioner.getId(), startDate, startDate.plusHours(1)));
+        appointmentRepository.save(entityFactory.createAppointment(practitioner.getId(),
+                patient_id,
+                startDate.plusMinutes(25),
+                startDate.plusMinutes(40)));
+
+        List<Availability> availabilities = proAvailabilityService.generateAvailabilities(practitioner.getId());
+
+        assertEquals(3, availabilities.size());
+
+        List<LocalDateTime> availabilitiesStartDate = availabilities.stream().map(Availability::getStartDate).collect(Collectors.toList());
+        ArrayList<LocalDateTime> expectedStartDate = new ArrayList<>();
+        expectedStartDate.add(startDate);
+        expectedStartDate.add(startDate.plusMinutes(40));
+        expectedStartDate.add(startDate.plusMinutes(55));
+        assertTrue(availabilitiesStartDate.containsAll(expectedStartDate));
+    }
+
+    @Test
+    void generateOptimalAvailabilitiesWithAppointmentOnTwoAvailabilities_version3() {
+        Practitioner practitioner = practitionerRepository.save(entityFactory.createPractitioner());
+        LocalDateTime startDate = LocalDateTime.of(2020, Month.FEBRUARY, 5, 11, 0, 0);
+        timeSlotRepository.save(entityFactory.createTimeSlot(practitioner.getId(), startDate, startDate.plusHours(1)));
+        appointmentRepository.save(entityFactory.createAppointment(practitioner.getId(),
+                patient_id,
+                startDate.plusMinutes(20),
+                startDate.plusMinutes(29)));
+
+        List<Availability> availabilities = proAvailabilityService.generateAvailabilities(practitioner.getId());
+
+        assertEquals(4, availabilities.size());
+
+        List<LocalDateTime> availabilitiesStartDate = availabilities.stream().map(Availability::getStartDate).collect(Collectors.toList());
+        ArrayList<LocalDateTime> expectedStartDate = new ArrayList<>();
+        expectedStartDate.add(startDate);
+        expectedStartDate.add(startDate.plusMinutes(29));
+        expectedStartDate.add(startDate.plusMinutes(44));
+        expectedStartDate.add(startDate.plusMinutes(59));
+        assertTrue(availabilitiesStartDate.containsAll(expectedStartDate));
+    }
+
 }

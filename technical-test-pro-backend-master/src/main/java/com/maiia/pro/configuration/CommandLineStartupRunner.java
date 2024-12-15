@@ -27,6 +27,7 @@ public class CommandLineStartupRunner implements CommandLineRunner {
     private PatientRepository patientRepository;
     @Autowired
     private PractitionerRepository practitionerRepository;
+
     @Autowired
     private TimeSlotRepository timeSlotRepository;
 
@@ -37,7 +38,7 @@ public class CommandLineStartupRunner implements CommandLineRunner {
     public void run(String... args) {
         //initialise data
         for (int i = 1; i <= 5; i++) {
-            String speciality ="orthodontist";
+            String speciality = "orthodontist";
             //create patient
             patientRepository.save(Patient.builder().firstName("patient_" + i).lastName("maiia").build());
             //create practitioner
@@ -58,14 +59,14 @@ public class CommandLineStartupRunner implements CommandLineRunner {
                 TimeSlot timeSlot4 = TimeSlot.builder().startDate(LocalDateTime.of(2021, 2, 10, 9, 0))
                         .endDate(LocalDateTime.of(2021, 2, 10, 16, 0)).practitionerId(practitioner.getId()).build();
                 timeSlotList.add(timeSlot4);
-                speciality="general practitioner";
+                speciality = "general practitioner";
             }
             if (i == 3) {
                 //timeslot from 2021/02/11 at 11H to 2021/02/11 at 18H
                 TimeSlot timeSlot5 = TimeSlot.builder().startDate(LocalDateTime.of(2021, 2, 11, 11, 0))
                         .endDate(LocalDateTime.of(2021, 2, 11, 18, 0)).practitionerId(practitioner.getId()).build();
                 timeSlotList.add(timeSlot5);
-                speciality="dentist";
+                speciality = "dentist";
             }
             practitioner.setSpeciality(speciality);
             practitioner = practitionerRepository.save(practitioner);
